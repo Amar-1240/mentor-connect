@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mentor Connect - Book Appointment</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="home.css">
+</head>
+
+<body>
+    <header>
+        <div class="logo">Mentor Connect</div><br>
+        <nav>
+            <div id="myAppointmentsLink">
+                <a href="appointments.html" class="asha-portal-button">My Appointments</a>
+            </div>
+            <a href="profile.html">Profile</a>
+            <a href="homepage.html" id="logout-button">Logout</a>
+        </nav>
+    </header>
+
+    <div class="appointment-card">
+        <!-- Mentor search form -->
+        <div class="mentor-search-form" id="searchContainer">
+            <div class="search-results">
+                <select id="specializationDropdown">
+                    <option value="">Select Specialization</option>
+                    <!-- Options dynamically added via JavaScript -->
+                </select>
+                <button id="searchMentorsBtn">Search Mentors</button>
+                <div id="mentorList" class="mentor-list"></div>
+            </div>
+        </div>
+
+        <!-- Mentor details and Appointment booking form combined -->
+        <div class="combined-container">
+            <!-- Mentor details -->
+            <div id="mentorDetails" class="floating-box" style="display: none;">
+                <h2>Mentor Details</h2>
+                <img id="mentorProfilePicture" src="" alt="Mentor Profile Picture" style="width:100px;height:100px;">
+                <p><b>Name:</b> <span id="mentorName"></span></p>
+                <p><b>Specialization:</b> <span id="mentorSpecialization"></span></p>
+                <p><b>Availability:</b> <span id="mentorAvailability"></span></p>
+            </div>
+
+
+            <!-- Appointment Booking Form -->
+            <div class="form-container floating-box" id="appointmentForm" style="display: none;">
+                <h2>Book a Slot</h2>
+                <form id="appointmentFormElem">
+                    <label for="appointmentDate">Appointment Date:</label>
+                    <input type="date" id="appointmentDate" name="appointmentDate" required>
+
+                    <h3>Select Time Slot:</h3>
+                    <div id="timeSlotContainer">
+                        <p class="alert" id="noSlotsMessage" style="display: none;">No slots available for the selected
+                            date.</p>
+
+                        <!-- Time slots dynamically added here -->
+                    </div>
+
+                    <button id="submitBtn" type="button">Submit Appointment</button>
+
+                </form>
+                <p class="alert" id="alertMessage"></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { getDatabase, ref, get, push } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDElLEEJWjV_uWEJ-fLKG0Y2bHmTwUcyuY",
+            authDomain: "mentor-4e047.firebaseapp.com",
+            projectId: "mentor-4e047",
+            storageBucket: "mentor-4e047.appspot.com",
+            messagingSenderId: "440085603152",
+            appId: "1:440085603152:web:17ca5509febfc3471e0255"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const database = getDatabase(app);
+
+        let menteeUid = '';
+        let selectedMentorUid = '';
+        let mentorAvailability = [];
+
+        // Listen for auth state changes to get the current user's UID
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                menteeUid = user.uid;
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
+
+        function clearForm() {
+            document.getElementById("appointmentDate").value = "";
+            document.getElementById("timeSlotContainer").innerHTML = "";
+        }
+
+        function initializeSpecializations() {
+            const specializations = ['mathematics', 'physics', 'chemistry', 'python', 'java', 'c++'];
+            const specializationDropdown = document.getElementById('specializationDropdown');
+            specializations.forEach((specialization) => {
+                const option = document.createElement('option');
+                option.value = specialization;
+                option.textContent = specialization.charAt(0).toUpperCase() + specialization.slice(1);
+                specializationDropdown.appendChild(option);
+            });
+        }
+
+        initializeSpecializations();
+
+        async function searchMentors() {
+            const selectedSpecialization = document.getElementById('specializationDropdown').value.trim().toLowerCase();
+            const mentorList = document.getElementById('mentorList');
+            mentorList.innerHTML = '';
+
+            // Check if a valid specialization is selected
+            if (!selectedSpecialization) {
+                // Show a message if no specialization is selected
+                mentorList.innerHTML = '<p>Please select a specialization to search.</p>';
+                return;
+            }
+
+            const mentorDetails = document.getElementById('mentorDetails');
+            const appointmentForm = document.getElementById('appointmentForm');
+            mentorDetails.style.display = 'none'; // Hide mentor details
+            appointmentForm.style.display = 'none'; // Hide appointment form
+
+            const mentorsRef = ref(database, 'mentors');
+
+            try {
+                const snapshot = await get(mentorsRef);
+                let hasMentors = false;
+
+                if (snapshot.exists()) {
+                    snapshot.forEach((childSnapshot) => {
+                        const mentorData = childSnapshot.val();
+                        const mentorName = `${mentorData.firstName} ${mentorData.lastName}`;
+                        const mentorSpecialization = mentorData.specialization.toLowerCase();
+                        if (mentorSpecialization === selectedSpecialization) {
+                            hasMentors = true;
+                            const mentorListItem = document.createElement('div');
+                            mentorListItem.className = 'mentor-item'; // Add class for styling
+                            mentorListItem.innerHTML = `<p data-id="${childSnapshot.key}">${mentorName}</p>`;
+                            mentorList.appendChild(mentorListItem);
+                        }
+                    });
+                }
+
+                if (!hasMentors) {
+                    mentorList.innerHTML = '<p>No mentors available for the selected specialization.</p>';
+                }
+            } catch (error) {
+                console.error('Error fetching data: ', error);
+            }
+        }
+        document.getElementById('searchMentorsBtn').addEventListener('click', searchMentors);
+        document.getElementById('specializationDropdown').addEventListener('change', () => {
+            // Clear mentor list when specialization changes
+            const mentorList = document.getElementById('mentorList');
+            mentorList.innerHTML = '';
+        });
+
+        document.getElementById('mentorList').addEventListener('click', (e) => {
+            if (e.target.tagName === 'P') {
+                const mentorId = e.target.getAttribute('data-id');
+                displayMentorDetails(mentorId);
+            }
+        });
+
+        async function displayMentorDetails(mentorId) {
+            clearMentorDetails(); // Clear existing mentor details, date, and time slots
+
+            const mentorRef = ref(database, `mentors/${mentorId}`);
+            get(mentorRef).then((snapshot) => {
+                const mentorData = snapshot.val();
+                if (mentorData) {
+                    document.getElementById('mentorName').innerText = `${mentorData.firstName} ${mentorData.lastName}`;
+                    document.getElementById('mentorSpecialization').innerText = mentorData.specialization.charAt(0).toUpperCase() + mentorData.specialization.slice(1);
+                    document.getElementById('mentorAvailability').innerText = `${convertToAMPM(mentorData.availabilityFrom)} to ${convertToAMPM(mentorData.availabilityTo)}`;
+
+                    // Set profile picture URL
+                    if (mentorData.profilePictureURL) {
+                        document.getElementById('mentorProfilePicture').src = mentorData.profilePictureURL;
+                    } else {
+                        document.getElementById('mentorProfilePicture').src = 'default-picture.jpg'; // fallback image
+                    }
+
+                    mentorAvailability = [mentorData.availabilityFrom, mentorData.availabilityTo];
+                    selectedMentorUid = mentorId;
+
+                    document.getElementById('mentorDetails').style.display = 'block';
+                    document.getElementById('appointmentForm').style.display = 'block';
+                }
+            }).catch((error) => {
+                console.error('Error fetching mentor details: ', error);
+            });
+        }
+
+        function setMinDate() {
+            const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
+            document.getElementById('appointmentDate').setAttribute('min', today);
+        }
+
+        // Call this function when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            setMinDate();
+        });
+
+
+
+        function convertToAMPM(timeStr) {
+            const [hours, minutes] = timeStr.split(':').map(Number);
+            const period = hours >= 12 ? 'PM' : 'AM';
+            const formattedHours = hours % 12 || 12;
+            const formattedMinutes = minutes.toString().padStart(2, '0');
+            return `${formattedHours}:${formattedMinutes} ${period}`;
+        }
+
+        async function fetchBookedSlots(date) {
+            const bookedSlotsRef = ref(database, 'appointments');
+            const snapshot = await get(bookedSlotsRef);
+
+            if (!snapshot.exists()) {
+                return [];
+            }
+
+            const bookedSlots = snapshot.val();
+            const slotsOnDate = Object.values(bookedSlots).filter(slot => slot.date === date);
+            return slotsOnDate.map(slot => slot.time);
+        }
+
+        function clearMentorDetails() {
+            document.getElementById('mentorName').innerText = '';
+            document.getElementById('mentorSpecialization').innerText = '';
+            document.getElementById('mentorAvailability').innerText = '';
+            document.getElementById('mentorDetails').style.display = 'none';
+            document.getElementById('appointmentForm').style.display = 'none';
+
+            // Clear date and time slots
+            document.getElementById('appointmentDate').value = '';
+            clearTimeSlots();
+
+            // Reset min date
+            setMinDate();
+        }
+
+
+
+
+        function clearTimeSlots() {
+            const timeSlotContainer = document.getElementById('timeSlotContainer');
+            const noSlotsMessage = document.getElementById('noSlotsMessage');
+
+            if (timeSlotContainer) {
+                timeSlotContainer.innerHTML = ''; // Clear old time slots
+            }
+            if (noSlotsMessage) {
+                noSlotsMessage.style.display = 'none'; // Hide the no slots message
+            }
+        }
+
+        async function loadTimeSlots() {
+            clearTimeSlots(); // Clear existing time slots
+
+            const selectedDate = document.getElementById('appointmentDate').value;
+            if (!selectedDate) return; // Exit if no date is selected
+
+            try {
+                const bookedSlots = await fetchBookedSlots(selectedDate);
+                if (mentorAvailability.length === 0) return; // Exit if no mentor availability is set
+
+                const [startHours, startMinutes] = mentorAvailability[0].split(':').map(Number);
+                const [endHours, endMinutes] = mentorAvailability[1].split(':').map(Number);
+
+                let currentSlot = new Date(selectedDate);
+                currentSlot.setHours(startHours, startMinutes, 0, 0);
+
+                const endSlot = new Date(selectedDate);
+                endSlot.setHours(endHours, endMinutes, 0, 0);
+
+                const now = new Date();
+
+                let hasAvailableSlot = false;
+
+                while (currentSlot < endSlot) {
+                    const nextSlot = new Date(currentSlot);
+                    nextSlot.setHours(currentSlot.getHours() + 1);
+
+                    const formattedCurrentSlot = currentSlot.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+                    const formattedNextSlot = nextSlot.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+
+                    const slotKey = `${formattedCurrentSlot} to ${formattedNextSlot}`;
+                    const isBooked = bookedSlots.includes(slotKey);
+                    const isBefore30Minutes = now >= new Date(currentSlot) - 30 * 60 * 1000;
+
+                    const slotDiv = document.createElement('div');
+                    slotDiv.className = 'time-slot';
+                    slotDiv.innerHTML = `
+                        <input type="radio" name="timeSlot" value="${slotKey}" id="slot-${formattedCurrentSlot}" ${isBooked || isBefore30Minutes ? 'disabled' : ''}>
+                        <label for="slot-${formattedCurrentSlot}" style="${isBefore30Minutes ? 'text-decoration: line-through;' : ''}">${slotKey}</label>
+                    `;
+
+                    if (!isBooked && !isBefore30Minutes) {
+                        hasAvailableSlot = true;
+                    }
+
+                    timeSlotContainer.appendChild(slotDiv);
+
+                    currentSlot = nextSlot;
+                }
+
+                if (!hasAvailableSlot) {
+                    const noSlotsMessage = document.getElementById('noSlotsMessage');
+                    if (noSlotsMessage) {
+                        noSlotsMessage.style.display = 'block'; // Show no slots message if needed
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading time slots: ', error);
+            }
+        }
+
+        function sanitizeRoomName(input) {
+            return input.replace(/[^a-zA-Z0-9_-]/g, ''); // Only allow alphanumeric characters, dashes, and underscores
+        }
+
+
+        function bookAppointment() {
+            const appointmentDate = document.getElementById('appointmentDate').value;
+            const selectedSlot = document.querySelector('input[name="timeSlot"]:checked');
+
+            if (!appointmentDate || !selectedSlot) {
+                document.getElementById('alertMessage').textContent = 'Please select a date and time slot.';
+                document.getElementById('alertMessage').classList.add('error');
+                return;
+            }
+
+            let roomId = `${selectedMentorUid}_${menteeUid}_${appointmentDate}_${selectedSlot.value.replace(' ', '_').replace(':', '-')}_${Math.random().toString(36).substring(7)}}`;
+            roomId = sanitizeRoomName(roomId);
+
+
+            // Now add roomId to the appointment data
+            const appointmentData = {
+                menteeUid: menteeUid,
+                mentorUid: selectedMentorUid,
+                date: appointmentDate,
+                time: selectedSlot.value,
+                roomId: roomId,  // This will be used to create a meeting automatically
+                status: "pending",
+                feedback: "pending"// Adding status field with initial value 'pending'
+            };
+
+
+            const appointmentsRef = ref(database, 'appointments');
+            push(appointmentsRef, appointmentData).then(() => {
+                document.getElementById('alertMessage').textContent = 'Appointment booked successfully!';
+                document.getElementById('alertMessage').classList.add('success');
+                clearForm();
+
+
+            }).catch((error) => {
+                console.error('Error booking appointment: ', error);
+                document.getElementById('alertMessage').textContent = 'Error booking appointment. Please try again.';
+                document.getElementById('alertMessage').classList.add('error');
+            });
+        }
+
+        // On page load
+        document.addEventListener('DOMContentLoaded', () => {
+            setMinDate();
+        });
+
+        // When changing mentors
+        document.getElementById('mentorList').addEventListener('click', (e) => {
+            if (e.target.tagName === 'P') {
+                const mentorId = e.target.getAttribute('data-id');
+                displayMentorDetails(mentorId);
+            }
+        });
+
+
+
+        document.getElementById('mentorList').addEventListener('click', (e) => {
+            if (e.target.tagName === 'P') {
+                const mentorId = e.target.getAttribute('data-id');
+                displayMentorDetails(mentorId);
+            }
+        });
+
+        document.getElementById('appointmentDate').addEventListener('change', loadTimeSlots);
+
+        document.getElementById('submitBtn').addEventListener('click', bookAppointment);
+    </script>
+
+</body>
+
+</html>

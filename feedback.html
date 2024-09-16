@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mentor Connect - Feedback</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="home.css">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .feedback-container {
+            width: 80%;
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .feedback-container h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .feedback-container label {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .feedback-container input,
+        .feedback-container textarea,
+        .feedback-container button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+
+        .feedback-container button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .feedback-container button:hover {
+            background-color: #0056b3;
+        }
+
+        .number-rating {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 10px;
+            font-size: 1.5em;
+        }
+
+        .number-rating input {
+            display: none;
+        }
+
+        .number-rating label {
+            color: #ddd;
+            cursor: pointer;
+            padding: 0 10px;
+            transition: color 0.2s;
+        }
+
+        .number-rating input:checked+label {
+            color: #f39c12;
+        }
+
+        .number-rating input:checked~input+label {
+            color: #ddd;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="feedback-container">
+        <h1>Provide Feedback</h1>
+        <form id="feedbackForm">
+            <input type="hidden" id="appointmentId" name="appointmentId">
+            <h3>Rating (5-1):</h3>
+            <div class="number-rating">
+                <input type="radio" id="num5" name="rating" value="5"><label for="num5">5</label>
+                <input type="radio" id="num4" name="rating" value="4"><label for="num4">4</label>
+                <input type="radio" id="num3" name="rating" value="3"><label for="num3">3</label>
+                <input type="radio" id="num2" name="rating" value="2"><label for="num2">2</label>
+                <input type="radio" id="num1" name="rating" value="1"><label for="num1">1</label>
+            </div>
+            <label for="feedback">Feedback:</label>
+            <textarea id="feedback" name="feedback" rows="4" required></textarea>
+            <button type="submit">Submit Feedback</button>
+        </form>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getDatabase, ref, get, update } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDElLEEJWjV_uWEJ-fLKG0Y2bHmTwUcyuY",
+            authDomain: "mentor-4e047.firebaseapp.com",
+            projectId: "mentor-4e047",
+            storageBucket: "mentor-4e047.appspot.com",
+            messagingSenderId: "440085603152",
+            appId: "1:440085603152:web:17ca5509febfc3471e0255"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        const form = document.getElementById('feedbackForm');
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const appointmentId = document.getElementById('appointmentId').value.trim();
+            const rating = document.querySelector('input[name="rating"]:checked')?.value;
+            const feedbackText = document.getElementById('feedback').value.trim();
+
+            console.log('Appointment ID:', appointmentId);
+            console.log('Rating:', rating);
+            console.log('Feedback Text:', feedbackText);
+
+            if (appointmentId === '' || rating === undefined || feedbackText === '') {
+                alert('Feedback submitted successfully!');
+                window.location.href = 'appointments.html';
+            }
+
+            const appointmentRef = ref(db, `appointments/${appointmentId}`);
+            get(appointmentRef).then((appointmentSnapshot) => {
+                if (appointmentSnapshot.exists()) {
+                    const appointmentData = appointmentSnapshot.val();
+                    const mentorUid = appointmentData.mentorUid;
+
+                    // Prepare the feedback array
+                    const feedbackArray = appointmentData.feedbackArray || [];
+                    feedbackArray.push({
+                        rating: rating,
+                        text: feedbackText
+                    });
+
+                    const updatedAppointmentData = {
+                        ...appointmentData,
+                        feedback: 'completed',
+                        feedbackArray: feedbackArray
+                    };
+
+                    // Remove appointmentId from the data
+                    delete updatedAppointmentData.appointmentId;
+
+                    update(appointmentRef, updatedAppointmentData).then(() => {
+                        const mentorRef = ref(db, `mentors/${mentorUid}`);
+                        get(mentorRef).then((mentorSnapshot) => {
+                            if (mentorSnapshot.exists()) {
+                                const mentorData = mentorSnapshot.val();
+                                const mentorFeedbackArray = mentorData.feedback || [];
+                                mentorFeedbackArray.push({
+                                    appointmentId: appointmentId,
+                                    rating: rating,
+                                    text: feedbackText
+                                });
+
+                                update(mentorRef, { feedback: mentorFeedbackArray }).then(() => {
+                                    // Notify user of success and redirect after submission
+                                    alert('Feedback submitted successfully!');
+                                    window.location.href = 'appointments.html'; // Redirect after successful submission
+                                }).catch((error) => {
+                                    console.error('Error updating mentor feedback:', error);
+                                    alert('An error occurred while updating mentor feedback. Please try again.');
+                                });
+                            } else {
+                                alert('Mentor not found.');
+                            }
+                        }).catch((error) => {
+                            console.error('Error retrieving mentor data:', error);
+                            alert('An error occurred while retrieving mentor data. Please try again.');
+                        });
+                    }).catch((error) => {
+                        console.error('Error updating appointment feedback:', error);
+                        alert('An error occurred while updating appointment feedback. Please try again.');
+                    });
+                } else {
+                    alert('Appointment not found.');
+                }
+            }).catch((error) => {
+                console.error('Error retrieving appointment data:', error);
+                alert('An error occurred while retrieving appointment data. Please try again.');
+            });
+        });
+    </script>
+</body>
+
+</html>

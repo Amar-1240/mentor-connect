@@ -1,0 +1,133 @@
+body {
+    height: 100vh;
+    display: flex;
+    margin: 0;
+    background-color: powderblue;
+    font-family: 'Raleway', sans-serif;
+}
+
+.container {
+    width: 100%;
+    max-width: 400px;
+    margin: auto;
+    padding: 20px;
+    border-radius: 10px;
+    background-color: #ffffff;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    transition: opacity 0.3s ease;
+}
+
+h2 {
+    text-align: center;
+    font-size: 1.875rem; /* Adjust font size as needed */
+    font-weight: 700;
+    color: #3498db; /* Adjust color as needed */
+}
+
+label {
+    margin-top: 15px;
+    font-size: 16px;
+    color: #555;
+}
+
+input {
+    margin-top: 10px;
+    width: 90%;
+    padding: 14px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f5f5f5;
+    transition: box-shadow 0.3s ease;
+    font-size: 14px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+}
+
+input:hover {
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+}
+
+button {
+    margin-top: 20px;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(to right, #297fb8, #67a5d1);
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.3s ease;
+    font-size: 16px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+}
+
+button:hover {
+    background: linear-gradient(to right, #67a5d1, #297fb8);
+}
+
+#toggleButtons {
+    margin-top: 30px;
+    text-align: center;
+}
+
+#toggleButtons button {
+    margin: 0 10px;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s ease, color 0.3s ease;
+    font-size: 16px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+}
+
+#toggleButtons button:hover {
+    background: linear-gradient(to right, #5396da, #67a5d1);
+    color: white;
+}
+
+.close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.close-button:hover {
+    transform: rotate(180deg);
+}
+
+.flex-img {
+    display: flex;
+    flex-direction: row;
+}
+
+img {
+    height: 30px;
+    width: 30px;
+    margin-left: 10px;
+    margin-top: 16px;
+}
+
+p {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 14px;
+}
+
+p a {
+    color: #3498db;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+p a:hover {
+    text-decoration: underline;
+}

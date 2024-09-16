@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Appointments</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f8f8;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .appointment-container {
+            max-width: 700px;
+            margin: 0 auto;
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 40px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .appointment {
+            width: 100%;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 30px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: flex-start;
+            position: relative;
+            min-height: 120px;
+        }
+
+        .appointment:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .appointment h2 {
+            margin-top: 0;
+            font-size: 24px;
+            color: #333;
+        }
+
+        .appointment p {
+            margin: 5px 0;
+            color: #666;
+        }
+
+        .button {
+            background-color: #4CAF50;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+
+        .button:hover {
+            background-color: #45a049;
+        }
+
+        .inactive-button {
+            background-color: gray;
+            cursor: not-allowed;
+        }
+
+        .timer {
+            font-weight: bold;
+            color: #ff0000;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>My Appointments</h1>
+    <div class="appointment-container">
+        <div id="appointmentsList">
+            <!-- Appointments will be dynamically added here -->
+        </div>
+    </div>
+
+    <script src='https://meet.jit.si/external_api.js'></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js" type="module"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js" type="module"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js" type="module"></script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, update, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDElLEEJWjV_uWEJ-fLKG0Y2bHmTwUcyuY",
+            authDomain: "mentor-4e047.firebaseapp.com",
+            projectId: "mentor-4e047",
+            storageBucket: "mentor-4e047.appspot.com",
+            messagingSenderId: "440085603152",
+            appId: "1:440085603152:web:17ca5509febfc3471e0255"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase();
+        const auth = getAuth(app);
+
+
+
+
+        // Helper function to convert 12-hour format to 24-hour format
+        function convert12To24(timeString) {
+            const [time, period] = timeString.split(' ');
+            let [hours, minutes] = time.split(':').map(Number);
+
+            if (period === 'PM' && hours !== 12) {
+                hours += 12;
+            } else if (period === 'AM' && hours === 12) {
+                hours = 0;
+            }
+
+            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+        }
+
+        // Helper function to calculate time left
+        function calculateTimeLeft(targetDateTime) {
+            const now = new Date();
+            const targetDate = new Date(targetDateTime);
+
+            const timeDifference = targetDate - now;
+
+            if (isNaN(timeDifference)) {
+                return 'Invalid Time';
+            }
+
+            if (timeDifference >= 24 * 60 * 60 * 1000) {
+                const days = Math.floor(timeDifference / (24 * 60 * 60 * 1000));
+                return `${days} day${days > 1 ? 's' : ''} left`;
+            } else if (timeDifference >= 60 * 60 * 1000) {
+                const hours = Math.floor(timeDifference / (60 * 60 * 1000));
+                return `${hours} hour${hours > 1 ? 's' : ''} left`;
+            } else if (timeDifference >= 60 * 1000) {
+                const minutes = Math.floor(timeDifference / (60 * 1000));
+                return `${minutes} minute${minutes > 1 ? 's' : ''} left`;
+            } else if (timeDifference >= 0) {
+                const seconds = Math.floor(timeDifference / 1000);
+                return `${seconds} second${seconds > 1 ? 's' : ''} left`;
+            } else {
+                return 'Meeting time reached';
+            }
+        }
+
+
+
+        // Function to update the timer and enable the "Join Now" button
+        function updateTimer(appointmentDiv, targetDateTime, appointmentKey) {
+            const timerSpan = appointmentDiv.querySelector('.timer');
+            const joinButton = appointmentDiv.querySelector('.button');
+
+            if (timerSpan) {
+                const timerInterval = setInterval(() => {
+                    const currentTime = new Date().getTime();
+                    const appointmentTime = new Date(targetDateTime).getTime();
+                    const timeLeft = calculateTimeLeft(targetDateTime);
+
+                    timerSpan.textContent = timeLeft;
+
+                    if (currentTime >= appointmentTime && currentTime < appointmentTime + (60 * 60 * 1000)) {
+                        joinButton.disabled = false;
+                        joinButton.classList.remove('inactive-button');
+                        timerSpan.textContent = 'Meeting started';
+
+
+                    } else if (currentTime >= appointmentTime + (60 * 60 * 1000)) {
+                        // After 1 hour, disable the "Join Now" button and mark the appointment as completed
+                        joinButton.disabled = true;
+                        joinButton.classList.add('inactive-button');
+                        timerSpan.textContent = 'Meeting completed';
+
+                        // Update the appointment status in Firebase to "completed"
+                        const appointmentRef = ref(db, `appointments/${appointmentKey}`);
+                        update(appointmentRef, { status: 'completed' });
+
+                        clearInterval(timerInterval);
+                    }
+                }, 1000);
+            }
+        }
+        function formatDateToDMY(dateString) {
+            const [year, month, day] = dateString.split('-');
+            return `${day}-${month}-${year}`;
+        }
+
+        function openJitsiMeeting(roomId) {
+            const domain = 'meet.jit.si';
+
+            const options = {
+                roomName: roomId, // Use the sanitized room name
+                width: 700,
+                height: 500,
+                parentNode: document.body,
+                userInfo: {
+                    displayName: null  // Display the mentee's name in the meeting
+                }
+            };
+
+            const api = new JitsiMeetExternalAPI(domain, options);
+
+            // Optionally, you can add event listeners on api to handle the meeting (like recording, participant events, etc.)
+        }
+
+        // In the main function where you render the appointments
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                const userId = user.uid;
+                const appointmentsListElement = document.getElementById('appointmentsList');
+                const appointmentsRef = ref(db, 'appointments');
+
+                onValue(appointmentsRef, (snapshot) => {
+                    appointmentsListElement.innerHTML = '';  // Clear the list before adding new appointments
+                    snapshot.forEach((childSnapshot) => {
+                        const appointmentData = childSnapshot.val();
+                        const appointmentKey = childSnapshot.key;
+
+                        // Check if the appointment belongs to the current mentor (user)
+                        if (appointmentData.mentorUid === userId) {
+                            const menteeRef = ref(db, `mentees/${appointmentData.menteeUid}`);
+
+                            onValue(menteeRef, (menteeSnapshot) => {
+                                const menteeData = menteeSnapshot.val();
+
+                                if (menteeData) {
+                                    const appointmentDiv = document.createElement('div');
+                                    appointmentDiv.classList.add('appointment');
+
+                                    const [startTime, endTime] = appointmentData.time.split(' to ').map(time => convert12To24(time.trim()));
+                                    const targetDateTime = `${appointmentData.date}T${startTime}`;
+
+                                    const timerSpan = document.createElement('span');
+                                    timerSpan.classList.add('timer');
+
+                                    const joinButton = document.createElement('button');
+                                    joinButton.classList.add('button');
+                                    joinButton.textContent = 'Join Now';
+                                    joinButton.disabled = new Date().getTime() < new Date(targetDateTime).getTime();
+                                    joinButton.classList.toggle('inactive-button', joinButton.disabled);
+
+                                    // Display the correct mentee's first and last name
+                                    appointmentDiv.innerHTML = `
+                                <div>
+                                    <h2>Appointment with ${menteeData.firstname} ${menteeData.lastname}</h2>
+                                    <p>Date: ${appointmentData.date ? formatDateToDMY(appointmentData.date) : 'Pending'}</p>
+                                    <p>Time: ${appointmentData.time ? appointmentData.time : 'Pending'}</p>
+                                    <p>Status: ${appointmentData.status ? appointmentData.status : 'Pending'}</p>
+                                </div>
+                            `;
+
+                                    appointmentDiv.appendChild(timerSpan);
+                                    appointmentDiv.appendChild(joinButton);
+                                    appointmentsListElement.appendChild(appointmentDiv);
+                                    joinButton.addEventListener('click', () => {
+                                        openJitsiMeeting(
+                                            appointmentData.roomId
+                                        );
+                                    });
+
+
+                                    // Pass appointmentKey to updateTimer for status updates
+                                    updateTimer(appointmentDiv, targetDateTime, appointmentKey);
+                                }
+                            });
+                        }
+                    });
+                });
+            } else {
+                document.getElementById('appointmentsList').innerHTML = '<p>Please log in to view your appointments.</p>';
+            }
+        });
+
+
+    </script>
+
+</body>
+
+</html>

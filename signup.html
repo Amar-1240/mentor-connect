@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signup</title>
+    <link rel="stylesheet" href="login.css">
+</head>
+
+<body>
+    <script>
+        function goBack() {
+            window.location.href = 'homepage.html';
+        }
+
+        function redirectToLogin() {
+            window.location.href = 'login.html';
+        }
+    </script>
+    <div class="container">
+        <div class="close-button" onclick="goBack()">x</div>
+        <form id="mainform">
+            <h2>Signup</h2>
+            <div>
+                <input type="text" id="firstname" placeholder="Firstname">
+            </div>
+            <div>
+                <input type="text" id="lastname" placeholder="Lastname">
+            </div>
+            <div>
+                <input type="email" id="email" placeholder="Email">
+            </div>
+            <div class="flex-img">
+                <input type="password" id="password" placeholder="Password">
+            </div>
+            <button id="signup" type="submit">Sign up</button>
+        </form>
+        <script type="module" src="signup.js"></script>
+        <script>
+            function togglePassword() {
+                var passwordField = document.getElementById("password");
+                var eyeIcon = document.getElementById("eye");
+
+                if (passwordField.type === "password") {
+                    passwordField.type = "text";
+                    eyeIcon.src = "eye-hidden.png";
+                } else {
+                    passwordField.type = "password";
+                    eyeIcon.src = "eye.png";
+                }
+            }
+        </script>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mentor Profile</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f8f8;
+        }
+
+        header {
+            background-color: #4caf50;
+            padding: 15px;
+            text-align: center;
+            color: white;
+        }
+
+        #mentor-details {
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 350px;
+        }
+
+        h2 {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333333;
+        }
+
+        p {
+            font-size: 16px;
+            color: #666666;
+            margin: 10px 0;
+        }
+
+        #mentor-details {
+            background: linear-gradient(to bottom right, #ffffff, #f0f0f0);
+        }
+
+        #mentor-details:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .edit-form {
+            margin-top: 20px;
+        }
+
+        .edit-form input,
+        .edit-form select {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        .edit-form button {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .edit-form button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Mentor Profile</h1>
+    </header>
+
+    <div id="mentor-details">
+        <!-- Mentor details will be dynamically added here from Realtime Database -->
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js" type="module"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js" type="module"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js" type="module"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDElLEEJWjV_uWEJ-fLKG0Y2bHmTwUcyuY",
+            authDomain: "mentor-4e047.firebaseapp.com",
+            projectId: "mentor-4e047",
+            storageBucket: "mentor-4e047.appspot.com",
+            messagingSenderId: "440085603152",
+            appId: "1:440085603152:web:17ca5509febfc3471e0255"
+        };
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase();
+        const auth = getAuth(app);
+
+        // Retrieve user information from local storage
+        const userInformation = JSON.parse(localStorage.getItem('userInformation'));
+
+        // Get the currently logged-in mentor's UID
+        const userId = userInformation ? userInformation.userId : null;
+
+        if (userId) {
+            // Get and display mentor details
+            const mentorDetailsElement = document.getElementById('mentor-details');
+            const mentorRef = ref(db, `mentors/${userId}`);
+            onValue(mentorRef, (snapshot) => {
+                const mentorData = snapshot.val();
+                if (mentorData) {
+                    mentorDetailsElement.innerHTML = `
+                        <center><h2>Basic Details</h2></center>
+                        <p><strong>Full Name:</strong> ${mentorData.firstName} ${mentorData.lastName}</p>
+                        <p><strong>Email:</strong> ${mentorData.email}</p>
+                        <p><strong>Mobile Number:</strong> ${mentorData.contact}</p>
+                        <p><strong>Specialization:</strong> ${mentorData.specialization}</p>
+                        <p><strong>Qualification:</strong> ${mentorData.qualification}</p>
+                        <p><strong>Experience:</strong> ${mentorData.experience}</p>
+                        <p><strong>Availability:</strong> From ${mentorData.availabilityFrom} to ${mentorData.availabilityTo}</p>
+                        <p><strong>LinkedIn:</strong> <a href="${mentorData.linkedin}" target="_blank">View Profile</a></p>
+                        
+                        <div class="edit-form">
+                            <h2>Edit Details</h2>
+                            <form id="edit-form">
+                                <input type="text" id="firstName" value="${mentorData.firstName}" placeholder="First Name">
+                                <input type="text" id="lastName" value="${mentorData.lastName}" placeholder="Last Name">
+                                <input type="email" id="email" value="${mentorData.email}" placeholder="Email">
+                                <input type="text" id="contact" value="${mentorData.contact}" placeholder="Mobile Number">
+                                <input type="text" id="specialization" value="${mentorData.specialization}" placeholder="Specialization">
+                                <input type="text" id="qualification" value="${mentorData.qualification}" placeholder="Qualification">
+                                <input type="text" id="experience" value="${mentorData.experience}" placeholder="Experience">
+                                <input type="text" id="availabilityFrom" value="${mentorData.availabilityFrom}" placeholder="Availability From (e.g., 09:00 AM)">
+                                <input type="text" id="availabilityTo" value="${mentorData.availabilityTo}" placeholder="Availability To (e.g., 05:00 PM)">
+                                <input type="url" id="linkedin" value="${mentorData.linkedin}" placeholder="LinkedIn Profile URL">
+                                <button type="button" id="save-btn">Save Changes</button>
+                            </form>
+                        </div>
+                    `;
+
+                    // Add event listener to the save button
+                    document.getElementById('save-btn').addEventListener('click', () => {
+                        // Gather values from form inputs
+                        const updatedData = {
+                            firstName: document.getElementById('firstName').value || mentorData.firstName,
+                            lastName: document.getElementById('lastName').value || mentorData.lastName,
+                            email: document.getElementById('email').value || mentorData.email,
+                            contact: document.getElementById('contact').value || mentorData.contact,
+                            specialization: document.getElementById('specialization').value || mentorData.specialization,
+                            qualification: document.getElementById('qualification').value || mentorData.qualification,
+                            experience: document.getElementById('experience').value || mentorData.experience,
+                            availabilityFrom: document.getElementById('availabilityFrom').value || mentorData.availabilityFrom,
+                            availabilityTo: document.getElementById('availabilityTo').value || mentorData.availabilityTo,
+                            linkedin: document.getElementById('linkedin').value || mentorData.linkedin
+                        };
+
+                        // Update mentor details in the database
+                        update(ref(db, `mentors/${userId}`), updatedData)
+                            .then(() => {
+                                alert('Profile updated successfully!');
+                                location.reload(); // Reload the page to reflect changes
+                            })
+                            .catch((error) => {
+                                console.error('Error updating profile:', error);
+                            });
+                    });
+                } else {
+                    mentorDetailsElement.innerHTML = '<p>Mentor details not found.</p>';
+                }
+            });
+        } else {
+            console.log('No user logged in.');
+        }
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,458 @@
+body {
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-image: url(https://images.rawpixel.com/image_800/czNmcy1wcml2YXRlL3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvbHIvdjk5Ni0wMDlfMS1rcm9pcjRkay5qcGc.jpg);
+    color: #333;
+}
+
+header {
+    background: linear-gradient(to right, #3498db, #297fb8);
+    backdrop-filter: blur(2px);
+    color: #fff;
+    text-align: center;
+    padding: 1em 0;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 1000;
+    transition: background 0.3s ease-in-out;
+}
+
+header:hover {
+    background: #4a535a;
+}
+
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+    color: #fff;
+    text-decoration: none;
+    margin-left: 15px;
+}
+
+nav a {
+    color: #fff;
+    text-decoration: none;
+    padding: 10px 20px;
+    margin: 0 15px;
+    transition: color 0.3s ease-in-out;
+}
+
+nav a:hover {
+    color: #67a5d1;
+}
+
+.dropdown-btn {
+    background-color: #67a5d1;
+    color: #fff;
+    padding: 10px 20px;
+    margin: 0 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease-in-out;
+}
+
+.dropdown-btn:hover {
+    background-color: #527b99;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+}
+
+.dropdown-content a {
+    color: #333;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    transition: background-color 0.3s ease-in-out;
+}
+
+.dropdown-content a:hover {
+    background-color: #67a5d1;
+    color: #fff;
+}
+
+.get-location-btn {
+    background-color: #4caf50;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease-in-out;
+}
+
+.get-location-btn:hover {
+    background-color: #45a049;
+}
+
+.location-info {
+    margin-top: 10px;
+    font-size: 16px;
+    color: #060606;
+    font-weight: bold;
+}
+
+section {
+    max-width: 800px;
+    margin: 4em auto;
+    padding: 2em;
+    background: transparent;
+    backdrop-filter: blur(3px);
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease-in-out;
+    margin-top: 200px;
+    border: 1px solid #e0e0e0;
+}
+
+section:hover {
+    transform: translateY(-10px);
+}
+
+h1 {
+    color: #394240;
+    font-family: 'Roboto', sans-serif;
+}
+
+p {
+    line-height: 1.6;
+    color: #555;
+    font-family: 'Roboto', sans-serif;
+}
+
+button {
+    background: #67a5d1;
+    color: #fff;
+    padding: 14px 28px;
+    font-size: 18px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.3s ease-in-out;
+}
+
+button:hover {
+    background: #527b99;
+}
+
+footer {
+    background: transparent;
+    color: #fff;
+    text-align: center;
+    padding: 1em 0;
+}
+
+.advertisement {
+    background: transparent;
+    backdrop-filter: blur(2px);
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    margin: 2em 0;
+}
+
+.advertisement h2 {
+    color: #394240;
+    font-size: 24px;
+    margin-bottom: 15px;
+}
+
+.advertisement p {
+    line-height: 1.6;
+    color: #555;
+    font-family: 'Roboto', sans-serif;
+}
+
+.advertisement p:last-child {
+    margin-bottom: 0;
+}
+
+.tagline {
+    font-size: 18px;
+    color: #555;
+}
+
+.signup-section,
+.login-section {
+    background-image: url(https://static.vecteezy.com/system/resources/previews/005/391/265/non_2x/stethoscope-and-smartphone-on-blue-background-app-health-smartphone-mockup-get-an-online-consultation-from-doctor-by-smartphone-doctor-online-consultation-concept-3d-rendering-free-photo.jpg);
+    color: #fff;
+    padding: 4em 0;
+    text-align: center;
+}
+
+.signup-form,
+.login-form {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    max-width: 400px;
+    margin: 0 auto;
+    backdrop-filter: blur(3px);
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.signup-form input,
+.login-form input {
+    padding: 15px;
+    margin: 10px 0;
+    width: 100%;
+    border: 1px solid #dcdcdc;
+    border-radius: 8px;
+    font-size: 16px;
+    color: #555;
+}
+
+.signup-form button,
+.login-form button {
+    background: #3498db;
+    color: #fff;
+    padding: 18px 32px;
+    font-size: 18px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.3s ease-in-out, color 0.3s ease-in-out;
+}
+
+.signup-form button:hover,
+.login-form button:hover {
+    background: #2980b9;
+    color: #fff;
+}
+
+.login-form a,
+.signup-form a {
+    color: #3498db;
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s ease-in-out;
+}
+
+.login-form a:hover,
+.signup-form a:hover {
+    color: #2980b9;
+}
+
+.switch-section {
+    margin-top: 20px;
+    color: #fff;
+}
+
+.switch-section a {
+    color: #fff;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.switch-section a:hover {
+    color: #ddd;
+}
+
+.ashaa {
+    height: 100px;
+    margin-right: 20px;
+}
+
+.docc {
+    height: 100px;
+    margin-right: 20px;
+}
+
+.button,
+.proceed-button,
+.asha-portal-button {
+    background-color: #3498db;
+    color: #fff;
+    padding: 15px 30px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-size: 20px;
+    transition: background-color 0.3s, color 0.3s, box-shadow 0.3s;
+}
+
+.button:hover,
+.proceed-button:hover,
+.asha-portal-button:hover {
+    background-color: #297fb8;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.joinn {
+    margin: 10px;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    /* Updated to space-between */
+    align-items: center;
+    height: 50vh;
+    background: transparent;
+    border-radius: 15px;
+    width: auto;
+}
+
+.doc-container {
+    display: flex;
+    align-items: center;
+}
+
+.doc img {
+    max-width: 20%;
+    height: auto;
+    margin-right: 20px;
+}
+
+.doc-content {
+    flex: 1;
+}
+
+.doc h2 {
+    font-size: 24px;
+    margin-bottom: 8px;
+}
+
+.doc-1 {
+    font-size: 16px;
+    /* Increased font size */
+    margin-bottom: 15px;
+}
+
+.doc-btn {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 15px;
+}
+
+.doc-btn:hover {
+    background-color: #2978b5;
+}
+
+.frist{
+    display: flex;
+}
+.sec{
+    margin-top: 20px;
+}
+.heading{
+    font-family: "Roboto";
+    font-size: 40px;
+    padding-left:20px;
+    text-align: center;
+}
+
+.wcu-card{
+    text-align: center;
+    background-color: white;
+    border-style: solid;
+    border-width: 1px;
+    border-color: #e5eaf4;
+    border-radius: 16px;
+}
+
+.wcu-card-image {
+    width: 87px;
+    height: 90px;
+}
+
+
+#scroll-container {
+    width: 800px; /* Set a fixed width for the container */
+    height: 50px; /* Adjust height to fit the text */
+    border: 3px solid black;
+    border-radius: 5px;
+    overflow: hidden;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+  }
+  
+  marquee{
+    font-size: 40px;
+  }
+
+
+.follow-us-section {
+    background-color: white;
+}
+
+.follow-us-section-heading {
+    text-align: center;
+    color: #183b56;
+    font-family: "Roboto";
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.follow-us-icon-container {
+    background-color: #faf7e8;
+    width: 80px;
+    height: 80px;
+    border-radius: 40px;
+    margin: 15px;
+    padding-top: 22px;
+    padding-bottom: 14px;
+    padding-right: 16px;
+    padding-left: 22px;
+}
+
+.icon {
+    color: #d0b200;
+    font-size: 35px;
+}
+footer {
+    background-color: #f8f9fa;
+    padding: 20px;
+    text-align: center;
+    color: #6c757d;
+}
+
+footer .footer-content {
+    margin-bottom: 10px;
+}
+
+footer .footer-content a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+footer .footer-content a:hover {
+    text-decoration: underline;
+}
+
+footer .footer-social {
+    margin-top: 10px;
+}
+
+footer .footer-social a {
+    margin: 0 10px;
+    color: #6c757d;
+}
+
+footer .footer-social a:hover {
+    color: #007bff;
+}

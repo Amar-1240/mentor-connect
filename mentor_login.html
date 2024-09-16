@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mentor - Login</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;600&display=swap">
+    <link rel="shortcut icon" href="data:image/x-icon;base64,iVBORw0KGgoAAAANSUhEUgAA...">
+    <!-- Replace with your favicon -->
+    <style>
+        body {
+            height: 100vh;
+            display: flex;
+            margin: 0;
+            background-color: #f8f8f8;
+            font-family: 'Raleway', sans-serif;
+        }
+
+        .left-section {
+            width: 45%;
+            background-color: #4caf50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .icon-container {
+            background-color: #ffffff;
+            border-radius: 50%;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 170px;
+            height: 170px;
+        }
+
+        .icon-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            /* Ensures the image covers the container without distortion */
+            border-radius: 50%;
+            /* Keeps the image circular */
+        }
+
+        .right-section {
+            width: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #ffffff;
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .form-container {
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #ffffff;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .heading {
+            font-size: 1.875rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            color: #4caf50;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-input {
+            width: 90%;
+            padding: 15px;
+            border: 1px solid #D1D5DB;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s ease;
+            box-shadow: 0px 20px 30px -10px rgba(38, 57, 77, 0.3);
+            /* Adjusted for better shadow */
+        }
+
+
+        .form-input:focus {
+            border-color: #16A34A;
+        }
+
+        .loginbutton {
+            width: 100%;
+            background-color: #4caf50;
+            color: #ffffff;
+            padding: 15px;
+            border-radius: 8px;
+            border: none;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .loginbutton:hover {
+            background-color: #4caf50;
+        }
+
+        .text-center {
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .text-muted {
+            color: #6B7280;
+        }
+
+        .link {
+            color: #16A34A;
+            text-decoration: none;
+        }
+
+        .link:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+
+            .left-section,
+            .right-section {
+                width: 100%;
+            }
+
+            .right-section {
+                padding: 20px;
+            }
+
+            .form-container {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="left-section">
+        <div class="icon-container">
+            <!-- Replace "icon.png" with the actual image URL -->
+            <img src="icon.png" alt="Mentor Icon">
+        </div>
+    </div>
+    <div class="right-section">
+        <div class="form-container">
+            <h1 class="heading">Mentor Login</h1>
+            <div class="form-group">
+                <input class="form-input" type="email" id="email" placeholder="Email">
+            </div>
+            <div class="form-group">
+                <input type="password" class="form-input" id="password" placeholder="Password">
+            </div>
+            <button id="loginButton" class="loginbutton">Sign In</button>
+            <div class="text-center">
+                <p class="text-muted">Don't have an account? <a href="mentor_signup.html" class="link">Sign up</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
+    <script type="module" src="mentor_login.js"></script>
+</body>
+
+</html>
